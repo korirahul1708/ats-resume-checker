@@ -1,58 +1,111 @@
 import React, { useState } from "react";
+import "./App.css";
+import Particles from "@tsparticles/react";
+import { loadFull } from "tsparticles";
+
+
 
 function App() {
   const [resume, setResume] = useState(null);
-  const [jd, setJd] = useState("");
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!resume) return alert("Please upload resume");
+
+    setLoading(true);
+    setResult(null);
+
     const formData = new FormData();
     formData.append("resume", resume);
-    formData.append("jd", jd);
 
-    const res = await fetch("http://127.0.0.1:5000/analyze", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const res = await fetch("http://127.0.0.1:5000/analyze", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await res.json();
-    setResult(data);
+      const data = await res.json();
+
+      // optional delay for loader
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      setResult(data);
+    } catch (err) {
+      alert("Backend not reachable. Is Flask running?");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const particlesInit = async (engine) => {
+    await loadFull(engine);
   };
 
   return (
-    <div style={{ padding: "40px", fontFamily: "Arial" }}>
-      <h2>ATS Resume Checker</h2>
+    <div className="app">
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={{
+          fullScreen: { enable: true, zIndex: 0 },
+          particles: {
+            number: { value: 60 },
+            color: { value: "#2563eb" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            move: { enable: true, speed: 1 },
+            links: {
+              enable: true,
+              distance: 150,
+              color: "#2563eb",
+              opacity: 0.4,
+              width: 1,
+            },
+          },
+          interactivity: {
+            events: {
+              onHover: { enable: true, mode: "repulse" },
+            },
+          },
+          detectRetina: true,
+        }}
+      />
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => setResume(e.target.files[0])}
-          required
-        />
-        <br /><br />
+      {/* 🧾 Main Card UI */}
+      <div className="card">
+        <h1>ATS Resume Checker</h1>
+        <p className="subtitle">
+          Upload your resume and get your ATS score instantly
+        </p>
 
-        <textarea
-          rows="6"
-          cols="60"
-          placeholder="Paste Job Description here..."
-          value={jd}
-          onChange={(e) => setJd(e.target.value)}
-          required
-        />
-        <br /><br />
+        <form onSubmit={handleSubmit}>
+          <label className="label">Upload Resume (PDF)</label>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => setResume(e.target.files[0])}
+            required
+          />
 
-        <button type="submit">Analyze</button>
-      </form>
+          <button type="submit" disabled={loading}>
+            {loading ? "Analyzing..." : "Check ATS Score"}
+          </button>
+        </form>
 
-      {result && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>ATS Score: {result.ats_score}%</h3>
-          <p><b>Matched Skills:</b> {result.matched.join(", ")}</p>
-          <p><b>Missing Skills:</b> {result.missing.join(", ")}</p>
-        </div>
-      )}
+        {/* 🔄 Spinner */}
+        {loading && <div className="spinner"></div>}
+
+        {/* ✅ Result */}
+        {result && !loading && (
+          <div className="result">
+            <h2>Your ATS Score: {result.ats_score}%</h2>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

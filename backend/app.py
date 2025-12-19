@@ -4,7 +4,7 @@ from flask_cors import CORS
 from resume_parser import extract_resume_text
 from text_cleaner import clean_text
 from skill_extractor import extract_skills
-from ats_score import calculate_ats
+from ats_score import calculate_ats_resume_only
 
 app = Flask(__name__)
 CORS(app)
@@ -19,26 +19,19 @@ def analyze():
         return jsonify({"error": "Resume file missing"}), 400
 
     resume_file = request.files["resume"]
-    jd = request.form.get("jd", "")
-
     resume_file.save("temp_resume.pdf")
 
     resume_text = extract_resume_text("temp_resume.pdf")
     clean_resume = clean_text(resume_text)
     resume_skills = extract_skills(clean_resume)
 
-    clean_jd = clean_text(jd)
-    jd_skills = extract_skills(clean_jd)
-
-    score, matched, missing = calculate_ats(resume_skills, jd_skills)
+    score = calculate_ats_resume_only(resume_skills, clean_resume)
 
     return jsonify({
-        "resume_skills": resume_skills,
-        "jd_skills": jd_skills,
-        "ats_score": score,
-        "matched": matched,
-        "missing": missing
-    })
+    "ats_score": score,
+    "keywords": resume_skills
+})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

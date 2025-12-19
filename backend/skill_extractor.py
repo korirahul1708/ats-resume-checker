@@ -1,9 +1,10 @@
 SKILLS = [
-    "python", "java", "c", "c++", "javascript", "react", "html", "css",
-    "machine learning", "deep learning", "sql", "mysql", "mongodb",
-    "flask", "django", "aws", "git", "github", "data structures",
-    "algorithms", "nlp", "api", "linux"
+    "python", "java", "c", "c++", "javascript", "react",
+    "html", "css", "machine learning", "sql", "mysql",
+    "mongodb", "flask", "aws", "git", "github",
+    "data structures", "algorithms", "api"
 ]
+
 
 def extract_skills(text):
     found = []
