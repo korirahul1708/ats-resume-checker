@@ -36,7 +36,9 @@ Built with **Flask (Python)** for backend and **React.js** for frontend.
 
 ---
 
-## 📸 Screenshots
 
-> Add screenshots of your UI here after running the app.
+## 📸 Project Screenshot
+
+![Project Screenshot](images/demo.png)
+
 
